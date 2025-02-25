@@ -79,6 +79,7 @@
           <div class="d-flex mt-4">
             <span class="font-weight-bold">Upload File</span>
             <FileUploadPdf
+              v-if="GetFeatureFlag('enable-document-records')"
               ref="fileUploadRef"
               :file.sync="file"
               :fileKey.sync="fileKey"
@@ -90,6 +91,20 @@
               :userId="getKeycloakGuid"
               :getPresignedUrl="LegalServices.getPresignedUrl"
               :uploadToUrl="LegalServices.uploadToUrl"
+            />
+            <FileUpload
+              v-else
+              ref="fileUploadRef"
+              :file.sync="file"
+              :fileKey.sync="fileKey"
+              class="ml-12 flex-grow-1"
+              :isRequired="enableValidation && isCourtOrder && !notation"
+              :customErrorMSg="courtOrderCustomValidationMsg"
+              :maxSize="MAX_FILE_SIZE"
+              :pageSize="PageSizes.LETTER_PORTRAIT"
+              :userId="getKeycloakGuid"
+              :uploadDocumentToDRS="LegalServices.uploadDocumentToDRS"
+              :businessIdentifier="getIdentifier"
             />
           </div>
 
@@ -151,17 +166,20 @@ import { Getter } from 'pinia-class'
 import { DateMixin } from '@/mixins'
 import { CourtOrderPoa } from '@bcrs-shared-components/court-order-poa'
 import FileUploadPdf from '@/components/common/FileUploadPdf.vue'
+import FileUpload from '@/components/common/FileUpload.vue'
 import { FormIF } from '@/interfaces'
 import { EffectOfOrderTypes, FilingSubTypes, PageSizes } from '@/enums'
 import { FilingTypes } from '@bcrs-shared-components/enums'
 import { EnumUtilities, LegalServices } from '@/services'
 import { useAuthenticationStore, useBusinessStore, useRootStore } from '@/stores'
 import { CorpTypeCd } from '@bcrs-shared-components/corp-type-module'
+import { GetFeatureFlag } from '@/utils'
 
 @Component({
   components: {
     CourtOrderPoa,
-    FileUploadPdf
+    FileUploadPdf,
+    FileUpload
   }
 })
 export default class AddStaffNotationDialog extends Mixins(DateMixin) {
