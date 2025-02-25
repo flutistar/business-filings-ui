@@ -482,4 +482,60 @@ export default class LegalServices {
         return null
       })
   }
+
+  /**
+ * Uploads the specified file to Document Record Service.
+ * @param file the file to upload
+ * @param documentClass the document class defined for the document service. e.g. 'CORP'
+ * @param documentType the type of document. e.g. 'CNTA'
+ * @param businessId the business identifier(tempId or businessId)
+ * @returns a promise to return the axios response or the error response
+ */
+  static async uploadDocumentToDRS (
+    document: File,
+    documentClass: string,
+    documentType: string,
+    businessId: string
+  ): Promise<AxiosResponse> {
+    const consumerFilingDate = new Date().toISOString()
+
+    const baseURL = sessionStorage.getItem('DOC_API_URL')
+    const docApiKey = sessionStorage.getItem('DOC_API_KEY')
+    const docApiAccountId = sessionStorage.getItem('DOC_ACCOUNT_ID')
+    // Set request params.
+    let url = `${baseURL}/documents/${documentClass}/${documentType}`
+    url += `?consumerFilingDate=${consumerFilingDate}&consumerFilename=${document.name}`
+    url += `&consumerIdentifier=${businessId}`
+
+    const headers = {
+      'x-apikey': docApiKey,
+      'Account-Id': docApiAccountId,
+      'Content-Type': 'application/pdf'
+    }
+    return axios.post(url, document, { headers: headers })
+    .then(response => {
+      return response
+    }).catch(error => {
+      return error.response
+    })
+  }
+
+   /**
+   * Deletes a document from Document Record Service.
+   * @param documentServiceId the unique identifier of document on Document Record Service
+   * @returns a promise to return the axios response or the error response
+   */
+   async deleteDocumentFromDRS (documentServiceId: string): Promise<AxiosResponse> {
+    // safety checks
+    if (!documentServiceId) {
+      throw new Error('Invalid parameters')
+    }
+    const baseURL = sessionStorage.getItem('DOC_API_URL')
+    const docApiKey = sessionStorage.getItem('DOC_API_KEY')
+    const docApiAccountId = sessionStorage.getItem('DOC_ACCOUNT_ID')
+    
+    const url = `documents/drs/${documentServiceId}`
+
+    return axios.delete(url)
+  }
 }
