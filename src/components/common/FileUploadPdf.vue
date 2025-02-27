@@ -18,9 +18,12 @@
 <script lang="ts">
 import { AxiosResponse } from 'axios'
 import { Component, Emit, Prop, Vue } from 'vue-property-decorator'
+import { StatusCodes } from 'http-status-codes'
 import { PageSizes, PAGE_SIZE_DICT } from '@/enums'
 import { PdfInfoIF, PresignedUrlIF } from '@/interfaces'
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf'
+import { GetFeatureFlag } from '@/utils'
+import { DocumentServices } from '@bcrs-shared-components/services'
 
 @Component({})
 export default class FileUploadPdf extends Vue {
@@ -31,6 +34,13 @@ export default class FileUploadPdf extends Vue {
   @Prop({ default: 0 }) readonly maxSize!: number // in MB
   @Prop({ default: null }) readonly pageSize!: PageSizes
   @Prop({ required: true }) readonly userId!: string
+
+  /** Set `required` to true for the three variables below once the feature flag is removed:
+   * `documentClass`, `documentType`, `businessIdentifier`
+  */
+  @Prop({ default: null }) readonly documentClass!: string
+  @Prop({ default: null }) readonly documentType!: string
+  @Prop({ default: null }) readonly businessIdentifier!: string
 
   // Network service functions
   @Prop({ required: true })
@@ -45,6 +55,7 @@ export default class FileUploadPdf extends Vue {
   errorMessages = [] as Array<string>
 
   pdfjsLib: any
+  enableDocumentRecords = GetFeatureFlag('enable-document-records')
 
   async created () {
     /** Load the lib and worker this way to avoid a memory leak (esp in unit tests)
@@ -107,6 +118,10 @@ export default class FileUploadPdf extends Vue {
 
   /** When file is selected or cleared, validates the file and uploads it. */
   async onChange (file: File): Promise<void> {
+    // remove previous doc if exists
+    if (this.fileKey) {
+      await DocumentServices.deleteDocumentFromDRS(this.fileKey)
+    }
     // update parent for later reactivity
     this.updateFile(file)
     this.updateFileKey(null)
@@ -248,17 +263,36 @@ export default class FileUploadPdf extends Vue {
    * @returns the file key on success, or null on failure
    */
   async uploadFile (file: File): Promise<string> {
-    try {
-      // NB: will throw on API error
-      const psu = await this.getPresignedUrl(file.name)
+    let psu: PresignedUrlIF
+    let res
 
-      // NB: will throw on API error
-      const res = await this.uploadToUrl(psu.preSignedUrl, file, psu.key,
-        this.userId)
+    try {
+      if (this.enableDocumentRecords) {
+        if (!this.documentClass || !this.documentType) {
+          this.errorMessages = ['An error occurred while uploading. Please try again.']
+          return null
+        }
+        res = await DocumentServices.uploadDocumentToDRS(
+          file,
+          this.documentClass,
+          this.documentType,
+          this.businessIdentifier
+        )
+      } else {
+        // NB: will throw on API error
+        psu = await this.getPresignedUrl(file.name)
+        // NB: will throw on API error
+        res = await this.uploadToUrl(
+          psu.preSignedUrl,
+          file,
+          psu.key,
+          this.userId
+        )
+      }
 
       // check if successful
-      if (res?.status === 200) {
-        return psu.key
+      if (res && [StatusCodes.OK, StatusCodes.CREATED].includes(res.status)) {
+        return this.enableDocumentRecords ? res.data.documentServiceId : psu.key
       }
       throw new Error()
     } catch (err) {

@@ -27,7 +27,7 @@ const defaultFlagSet: LDFlagSet = {
   'supported-dissolution-entities': [],
   'supported-put-back-on-entities': [],
   'supported-restoration-entities': [],
-  'enable-document-records': false,
+  'enable-document-records': false
 }
 
 /**
