@@ -93,6 +93,9 @@
                               :userId="getKeycloakGuid"
                               :getPresignedUrl="LegalServices.getPresignedUrl"
                               :uploadToUrl="LegalServices.uploadToUrl"
+                              :businessIdentifier="getIdentifier"
+                              :documentClass="DocumentTypes.courtOrder.class"
+                              :documentType="DocumentTypes.courtOrder.type"
                             />
                             <v-icon>mdi-plus</v-icon>
                             <span>Add a Document</span>
@@ -224,7 +227,7 @@ import { CourtOrderPoa } from '@bcrs-shared-components/court-order-poa'
 import FileUploadPdf from '@/components/common/FileUploadPdf.vue'
 import { FormIF, StaffPaymentIF } from '@/interfaces'
 import { EffectOfOrderTypes, PageSizes } from '@/enums'
-import { FilingCodes, FilingNames, FilingTypes, StaffPaymentOptions } from '@bcrs-shared-components/enums'
+import { FilingCodes, FilingNames, FilingTypes, StaffPaymentOptions, DOCUMENT_TYPES } from '@bcrs-shared-components/enums'
 import { EnumUtilities, LegalServices } from '@/services'
 import { useAuthenticationStore, useBusinessStore, useConfigurationStore, useRootStore } from '@/stores'
 import { CorpTypeCd } from '@bcrs-shared-components/corp-type-module'
@@ -254,6 +257,7 @@ export default class CourtOrderView extends Mixins(DateMixin, FilingMixin, Commo
   readonly PageSizes = PageSizes
   // enum for template
   readonly FilingCodes = FilingCodes
+  readonly DocumentTypes = DOCUMENT_TYPES
   /** Prop to display the dialog. */
   @Prop({ required: true }) readonly dialog!: boolean
 

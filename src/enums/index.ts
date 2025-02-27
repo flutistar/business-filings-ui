@@ -17,7 +17,6 @@ export * from './roles'
 export * from './routes'
 export * from './saveErrorReasons'
 export * from './warningTypes'
-export * from './documentTypes'
 
 // external enums
 export { CorpTypeCd, CorpClass } from '@bcrs-shared-components/corp-type-module'
