@@ -856,7 +856,11 @@ export default class StandaloneDirectorsFiling extends Mixins(CommonMixin, DateM
         certifiedBy: this.certifiedBy || '',
         email: 'no_one@never.get',
         date: this.getCurrentDate, // NB: API will reassign this date according to its clock
-        effectiveDate: this.yyyyMmDdToApi(this.codDate)
+        effectiveDate: this.yyyyMmDdToApi(this.codDate),
+        documentIdState: {
+          valid: this.docIdValid,
+          consumerDocumentId: this.docId
+        }
       }
     }
 

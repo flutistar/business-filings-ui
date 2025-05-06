@@ -718,7 +718,11 @@ export default class StandaloneOfficeAddressFiling extends Mixins(CommonMixin, D
         certifiedBy: this.certifiedBy || '',
         email: 'no_one@never.get',
         date: this.getCurrentDate, // NB: API will reassign this date according to its clock
-        effectiveDate: this.yyyyMmDdToApi(this.coaDate)
+        effectiveDate: this.yyyyMmDdToApi(this.coaDate),
+        documentIdState: {
+          valid: this.docIdValid,
+          consumerDocumentId: this.docId
+        }
       }
     }
 

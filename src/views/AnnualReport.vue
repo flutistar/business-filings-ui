@@ -1047,7 +1047,11 @@ export default class AnnualReport extends Mixins(CommonMixin, DateMixin, FilingM
         email: 'no_one@never.get',
         date: this.getCurrentDate, // NB: API will reassign this date according to its clock
         ARFilingYear: this.ARFilingYear, // NB: used by TodoList when loading draft AR
-        effectiveDate: this.yyyyMmDdToApi(this.asOfDate)
+        effectiveDate: this.yyyyMmDdToApi(this.asOfDate),
+        documentIdState: {
+          valid: this.docIdValid,
+          consumerDocumentId: this.docId
+        }
       }
     }
 
